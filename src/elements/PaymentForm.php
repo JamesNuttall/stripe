@@ -711,11 +711,20 @@ class PaymentForm extends Element
 
         if ($this->enableSubscriptions){
             $plan = $this->getSinglePlan();
-            $params['subscription_data'] = [
-                'items' => [[
+            $items = [];
+            if ($this->subscriptionType == SubscriptionType::SINGLE_PLAN){
+                $items = [[
                     'plan' => $plan['id'],
                     'quantity' => $publicData['quantity']
-                ]],
+                ]];
+            }else{
+                if ($this->enupalMultiplePlans){
+                    throw new \Exception('Multiple plans are no supported in new Stripe Checkout, please use Stripe Elements instead.');
+                }
+            }
+
+            $params['subscription_data'] = [
+                'items' => $items,
                 'metadata' => $metadata
             ];
         }else{

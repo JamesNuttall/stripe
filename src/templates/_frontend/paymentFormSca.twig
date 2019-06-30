@@ -102,7 +102,7 @@
                     {% endif %}
                 {% else %}
                     {# User select Plan #}
-                    {% if paymentForm.enupalMultiplePlans|length %}
+                    {% if paymentForm.enupalMultiplePlans|length and not paymentForm.enableCheckout %}
                         <div class="form-group">
                             <section class="tab">
                                 <div class="heading">
