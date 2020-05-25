@@ -23,6 +23,8 @@ use enupal\stripe\services\Orders;
 use yii\base\Event;
 use craft\web\twig\variables\CraftVariable;
 use enupal\stripe\fields\StripePaymentForms as StripePaymentFormsField;
+use craft\events\ConfigEvent;
+use craft\services\ProjectConfig;
 
 use enupal\stripe\variables\StripeVariable;
 use enupal\stripe\models\Settings;
@@ -83,6 +85,11 @@ class Stripe extends Plugin
         Event::on(Orders::class, Orders::EVENT_AFTER_PROCESS_WEBHOOK, function(WebhookEvent $e) {
             self::$app->subscriptions->processSubscriptionGrantEvent($e);
         });
+
+        Craft::$app->projectConfig
+            ->onAdd('productTypes.{uid}', [$this->productTypes, 'handleChangedProductType'])
+            ->onUpdate('productTypes.{uid}', [$this->productTypes, 'handleChangedProductType'])
+            ->onRemove('productTypes.{uid}', [$this->productTypes, 'handleDeletedProductType']);
     }
 
     /**
