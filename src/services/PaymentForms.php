@@ -574,15 +574,8 @@ class PaymentForms extends Component
      */
     public function createDefaultVariantFields()
     {
-        $matrixBasicField = $this->createFormFieldsMatrixField();
-        $multiplePlansMatrixField = $this->createMultiplePlansMatrixField();
-        // Save our fields
-        $currentFieldContext = Craft::$app->getContent()->fieldContext;
-        Craft::$app->getContent()->fieldContext = StripePlugin::$app->settings->getFieldContext();
-        Craft::$app->fields->saveField($matrixBasicField);
-        Craft::$app->fields->saveField($multiplePlansMatrixField);
-        // Give back the current field context
-        Craft::$app->getContent()->fieldContext = $currentFieldContext;
+        $this->createFormFieldsMatrixField();
+        $this->createMultiplePlansMatrixField();
     }
 
     /**
@@ -824,11 +817,18 @@ class PaymentForms extends Component
     }
 
     /**
-     * @return \craft\base\FieldInterface
+     * @return bool
      * @throws \yii\db\Exception
      */
     private function createFormFieldsMatrixField()
     {
+        $matrixBasicField = $this->getMatrixField(self::BASIC_FORM_FIELDS_HANDLE);
+
+        if (!is_null($matrixBasicField)) {
+            // The field already exists probably from Project Config!
+            return true;
+        }
+
         $fieldsService = Craft::$app->getFields();
 
         $matrixSettings = [
@@ -1132,16 +1132,6 @@ class PaymentForms extends Component
             ]
         ];
 
-        $currentFieldContext = Craft::$app->getContent()->fieldContext;
-        Craft::$app->getContent()->fieldContext = StripePlugin::$app->settings->getFieldContext();
-        $matrixBasicField = Craft::$app->fields->getFieldByHandle(self::BASIC_FORM_FIELDS_HANDLE);
-        Craft::$app->getContent()->fieldContext = $currentFieldContext;
-
-        if (!is_null($matrixBasicField)) {
-            // For some reason the field already exits
-            return $matrixBasicField;
-        }
-
         // Our basic fields is a matrix field
         $matrixBasicField = $fieldsService->createField([
             'type' => Matrix::class,
@@ -1153,15 +1143,34 @@ class PaymentForms extends Component
             'translationMethod' => Field::TRANSLATION_METHOD_SITE,
         ]);
 
-        return $matrixBasicField;
+        $this->saveMatrixField($matrixBasicField);
+
+        return true;
+    }
+
+    private function saveMatrixField($field)
+    {
+        // Save our fields
+        $currentFieldContext = Craft::$app->getContent()->fieldContext;
+        Craft::$app->getContent()->fieldContext = StripePlugin::$app->settings->getFieldContext();
+        Craft::$app->fields->saveField($field);
+        // Give back the current field context
+        Craft::$app->getContent()->fieldContext = $currentFieldContext;
     }
 
     /**
-     * @return \craft\base\FieldInterface
+     * @return bool
      * @throws \yii\db\Exception
      */
     private function createMultiplePlansMatrixField()
     {
+        $matrixMultiplePlansField = $this->getMatrixField(self::MULTIPLE_PLANS_HANDLE);
+
+        if (!is_null($matrixMultiplePlansField)) {
+            // The field already exists from project config!
+            return true;
+        }
+
         $fieldsService = Craft::$app->getFields();
 
         $subscriptionUrl = UrlHelper::cpUrl('enupal-stripe/settings/subscriptions');
@@ -1215,16 +1224,6 @@ class PaymentForms extends Component
             ]
         ];
 
-        $currentFieldContext = Craft::$app->getContent()->fieldContext;
-        Craft::$app->getContent()->fieldContext = StripePlugin::$app->settings->getFieldContext();
-        $matrixMultiplePlansField = Craft::$app->fields->getFieldByHandle(self::MULTIPLE_PLANS_HANDLE);
-        Craft::$app->getContent()->fieldContext = $currentFieldContext;
-
-        if (!is_null($matrixMultiplePlansField)) {
-            // For some reason the field already exits
-            return $matrixMultiplePlansField;
-        }
-
         // Our multiple plans matrix field
         // Let the customer can sign up for one of several available plans (and optionally set a custom amount).
         $matrixMultiplePlansField = $fieldsService->createField([
@@ -1237,7 +1236,19 @@ class PaymentForms extends Component
             'translationMethod' => Field::TRANSLATION_METHOD_SITE,
         ]);
 
-        return $matrixMultiplePlansField;
+        $this->saveMatrixField($matrixMultiplePlansField);
+
+        return true;
+    }
+
+    private function getMatrixField($handle)
+    {
+        $currentFieldContext = Craft::$app->getContent()->fieldContext;
+        Craft::$app->getContent()->fieldContext = StripePlugin::$app->settings->getFieldContext();
+        $matrixField = Craft::$app->fields->getFieldByHandle($handle);
+        Craft::$app->getContent()->fieldContext = $currentFieldContext;
+
+        return $matrixField;
     }
 
     /**
