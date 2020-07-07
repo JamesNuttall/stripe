@@ -20,6 +20,7 @@ use craft\fields\Table;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use craft\models\FieldGroup;
 use enupal\stripe\enums\CheckoutPaymentType;
 use enupal\stripe\enums\PaymentType;
 use enupal\stripe\enums\SubscriptionType;
@@ -1171,6 +1172,7 @@ class PaymentForms extends Component
         $matrixBasicField = $fieldsService->createField([
             'type' => Matrix::class,
             'name' => 'Basic Form Fields',
+            'groupId' => $this->getFieldGroupId(),
             'context' => StripePlugin::$app->settings->getFieldContext(),
             'handle' => self::BASIC_FORM_FIELDS_HANDLE,
             'settings' => json_encode($matrixSettings),
@@ -1181,6 +1183,32 @@ class PaymentForms extends Component
         $this->saveMatrixFieldOnProjectConfig($matrixBasicField);
 
         return true;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFieldGroupId()
+    {
+        $fieldGroupId = null;
+
+        $fieldGroup = (new \yii\db\Query())
+            ->select('*')
+            ->from(['{{%fieldgroups}}'])
+            ->where(['name' => 'Stripe Payments'])
+            ->one();
+
+        if (!isset($fieldGroup['id'])) {
+            $fieldGroup = new FieldGroup();
+            $fieldGroup->name = "Stripe Payments";
+            Craft::$app->getFields()->saveGroup($fieldGroup);
+
+            $fieldGroupId = $fieldGroup->id;
+        } else {
+            $fieldGroupId = $fieldGroup['id'];
+        }
+
+        return $fieldGroupId;
     }
 
     public function getStripeMatrixFieldFromDb($handle)
@@ -1265,6 +1293,7 @@ class PaymentForms extends Component
         $matrixMultiplePlansField = $fieldsService->createField([
             'type' => Matrix::class,
             'name' => 'Add Plan',
+            'groupId' => $this->getFieldGroupId(),
             'context' => StripePlugin::$app->settings->getFieldContext(),
             'handle' => self::MULTIPLE_PLANS_HANDLE,
             'settings' => json_encode($matrixSettings),

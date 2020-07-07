@@ -39,7 +39,7 @@ class Stripe extends Plugin
 
     public $hasCpSection = true;
     public $hasCpSettings = true;
-    public $schemaVersion = '2.5.0';
+    public $schemaVersion = '2.5.2';
 
     public function init()
     {
@@ -118,7 +118,6 @@ class Stripe extends Plugin
     protected function afterUninstall()
     {
         Stripe::$app->paymentForms->deleteVariantFields();
-        Craft::$app->projectConfig->rebuild();
     }
 
     /**
