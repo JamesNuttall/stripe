@@ -36,8 +36,8 @@
             {% if options.lineItems is defined %}
                 <input type="hidden" name="enupalLineItems" value="{{ options.lineItems|json_encode() }}">
             {% endif %}
-            {% if options.lineItems is defined %}
-                <input type="hidden" name="enupalLineItems" value="{{ options.lineItems|json_encode() }}">
+            {% if options.removeDefaultItem is defined %}
+                <input type="hidden" name="enupalRemoveDefaultItem" value="{{ options.removeDefaultItem }}">
             {% endif %}
             {% if options.allowPromotionCodes is defined %}
                 <input type="hidden" name="enupalAllowPromotionCodes" value="{{ options.allowPromotionCodes }}">
