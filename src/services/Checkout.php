@@ -72,7 +72,7 @@ class Checkout extends Component
 
         $sessionParams = [
             'payment_method_types' => $paymentMethods,
-
+            'mode' => 'payment',
             'success_url' => $this->getSiteUrl('enupal/stripe-payments/finish-order?session_id={CHECKOUT_SESSION_ID}'),
             'cancel_url' => $this->getSiteUrl($publicData['checkoutCancelUrl']),
         ];
